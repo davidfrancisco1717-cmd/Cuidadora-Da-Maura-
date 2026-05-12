@@ -20,6 +20,7 @@ export interface MauraProfile {
   dreams: string[];
   triggers: string[];
   medications: string[];
+  responseStyle: 'normal' | 'terapeuta' | 'amiga' | 'coach' | 'direta';
   emergencyContact?: {
     name: string;
     phone: string;

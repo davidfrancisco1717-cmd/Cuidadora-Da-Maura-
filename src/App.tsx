@@ -21,6 +21,7 @@ const INITIAL_PROFILE: MauraProfile = {
   dreams: ["Viagem para a praia", "Concluir curso"],
   triggers: ["Frio", "Estresse", "Desidratação"],
   medications: ["Hidroxiureia", "Ácido Fólico"],
+  responseStyle: 'normal',
 };
 
 export default function App() {
@@ -59,7 +60,7 @@ export default function App() {
     const newProfile = { ...profile };
     let changed = false;
 
-    // Basic extraction logic
+    // Name extraction
     if (lower.includes("me chamo") || lower.includes("meu nome é")) {
       const match = text.match(/(me chamo|meu nome é) ([A-Za-zÀ-ú]+)/i);
       if (match && match[2]) {
@@ -68,6 +69,7 @@ export default function App() {
       }
     }
 
+    // Hobbies extraction
     if (lower.includes("gosto de") || lower.includes("adoro")) {
       const match = text.match(/(gosto de|adoro) ([\w\s,]+)/i);
       if (match && match[2]) {
@@ -77,6 +79,40 @@ export default function App() {
           changed = true;
         }
       }
+    }
+
+    // Dreams extraction
+    if (lower.includes("sonho") || lower.includes("quero ser")) {
+      const match = text.match(/(sonho|quero ser) ([\w\s,]+)/i);
+      if (match && match[2]) {
+        const dream = match[2].trim().substring(0, 45);
+        if (!newProfile.dreams.includes(dream)) {
+          newProfile.dreams = [...newProfile.dreams, dream];
+          changed = true;
+        }
+      }
+    }
+
+    // Medications extraction
+    if (lower.includes("tomo") || lower.includes("medicação") || lower.includes("remédio")) {
+      const medications = ["hidroxiureia", "ácido fólico", "dipirona", "paracetamol"];
+      medications.forEach(med => {
+        if (lower.includes(med) && !newProfile.medications.some(m => m.toLowerCase() === med)) {
+          newProfile.medications = [...newProfile.medications, med.charAt(0).toUpperCase() + med.slice(1)];
+          changed = true;
+        }
+      });
+    }
+
+    // Triggers extraction
+    if (lower.includes("crise") || lower.includes("dor")) {
+      const triggers = ["frio", "estresse", "calor", "desidratação", "atividade física"];
+      triggers.forEach(trigger => {
+        if (lower.includes(trigger) && !newProfile.triggers.some(t => t.toLowerCase() === trigger)) {
+          newProfile.triggers = [...newProfile.triggers, trigger.charAt(0).toUpperCase() + trigger.slice(1)];
+          changed = true;
+        }
+      });
     }
 
     if (changed) setProfile(newProfile);
@@ -173,7 +209,13 @@ export default function App() {
               <div className="h-full w-full mx-auto overflow-hidden">
                 {activeTab === 'chat' && (
                   <div className="h-full flex flex-col bg-brand-bg">
-                    <Chat messages={messages} onSendMessage={handleSendMessage} isTyping={isTyping} />
+                    <Chat 
+                      messages={messages} 
+                      onSendMessage={handleSendMessage} 
+                      isTyping={isTyping} 
+                      profile={profile}
+                      onUpdateProfile={(p) => setProfile(p)}
+                    />
                   </div>
                 )}
                 

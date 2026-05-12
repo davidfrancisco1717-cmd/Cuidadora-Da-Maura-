@@ -6,11 +6,20 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const getSystemInstruction = (profile: MauraProfile, logs: HealthLog[]) => {
   const recentLogs = logs.slice(-10).map(l => `- ${new Date(l.timestamp).toLocaleString()}: ${l.type} = ${JSON.stringify(l.value)}`).join('\n');
   
+  const styleDescription = {
+    normal: "Equilibrado, empático e informativo.",
+    terapeuta: "Foco profundo em sentimentos, escuta ativa e perguntas reflexivas sobre o estado emocional.",
+    amiga: "Tom informal, caloroso, usa emojis, e compartilha o suporte como alguém íntimo.",
+    coach: "Foco em ação, pequenas metas diárias, motivação e superação de gatilhos.",
+    direta: "Respostas curtas, objetivas e práticas, sem perder a empatia."
+  }[profile.responseStyle || 'normal'];
+
   return `Você é a "Companheira de Cuidado" da Maura. Maura tem doença falciforme e você é sua assistente especializada, confidente e mapeadora de saúde.
 
-Sua personalidade:
+Sua personalidade atual (Estilo: ${profile.responseStyle}):
+${styleDescription}
 - Empática, calorosa e calma.
-- Use um tom de conversa natural, como uma amiga próxima que também é médica.
+- Use um tom de conversa natural.
 - Evite ser excessivamente clínica, mas seja rigorosa com sinais de alerta.
 
 Conhecimento sobre a Maura:
