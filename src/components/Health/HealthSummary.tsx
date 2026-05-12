@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MauraProfile, HealthLog } from '../../types';
-import { generateHealthSummary } from '../../services/clientAiService';
+import { generateHealthSummary } from '../../services/geminiService';
 import ReactMarkdown from 'react-markdown';
 import { FileText, Sparkles, ChevronRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';

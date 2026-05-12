@@ -85,7 +85,7 @@ export async function generateHealthSummary(logs: HealthLog[], profile: MauraPro
   Responda em formato Markdown, com tom acolhedor.`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: "gemini-3-flash-preview",
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
   });
 

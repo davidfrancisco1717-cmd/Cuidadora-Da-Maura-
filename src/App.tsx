@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { Message, HealthLog, MauraProfile, AppState } from './types';
-import { getChatResponse } from './services/clientAiService';
+import { getChatResponse } from './services/geminiService';
 import { Chat } from './components/Chat/Chat';
 import { HealthTracker } from './components/Health/HealthTracker';
 import { HealthSummary } from './components/Health/HealthSummary';
