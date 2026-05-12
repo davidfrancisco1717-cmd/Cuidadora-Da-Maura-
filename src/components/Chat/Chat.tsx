@@ -93,42 +93,62 @@ export const Chat: React.FC<ChatProps> = ({ messages, onSendMessage, isTyping, p
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth bg-brand-bg/50">
         <div className="max-w-4xl mx-auto w-full space-y-6 flex flex-col min-h-full">
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center flex-1 max-w-sm mx-auto text-center animate-in fade-in zoom-in duration-700 py-10">
-              <div className="w-16 h-16 bg-brand-cream rounded-2xl flex items-center justify-center text-brand-terracotta mb-6 shadow-md border border-brand-tan/10">
-                <Sparkles className="w-8 h-8" />
-              </div>
-              <h2 className="text-2xl font-bold text-brand-brown-800 tracking-tight mb-8">
-                Como posso te ajudar agora, <span className="italic">{profile.name}</span>?
-              </h2>
+            <div className="flex flex-col items-center justify-center flex-1 max-w-sm mx-auto text-center animate-in fade-in zoom-in duration-700 py-10 scale-95 md:scale-100">
+              <motion.div 
+                animate={{ 
+                  scale: [1, 1.05, 1],
+                  rotate: [0, 5, -5, 0]
+                }}
+                transition={{ duration: 4, repeat: Infinity }}
+                className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center text-brand-terracotta mb-8 shadow-xl border border-brand-tan/10 relative"
+              >
+                <Sparkles className="w-10 h-10" />
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-brand-terracotta rounded-full flex items-center justify-center text-[8px] text-white font-bold">1</div>
+              </motion.div>
               
-              <div className="grid grid-cols-2 gap-3 w-full">
+              <h2 className="text-3xl font-bold text-brand-brown-800 tracking-tight mb-4">
+                Olá, <span className="italic text-brand-terracotta">{profile.name}</span>
+              </h2>
+              <p className="text-sm text-brand-brown-800/60 mb-8 leading-relaxed px-4">
+                Como está o seu nível de dor e hidratação hoje? Estou aqui para te ouvir e cuidar.
+              </p>
+              
+              <div className="grid grid-cols-2 gap-4 w-full">
                 {[
-                  { label: "Relatar Dor", icon: "🩹" },
-                  { label: "Beber Água", icon: "💧" },
-                  { label: "Pedir Apoio", icon: "🫂" },
-                  { label: "Ver Evolução", icon: "📈" },
+                  { label: "Relatar Dor", icon: "🩹", desc: "Mapear crise" },
+                  { label: "Beber Água", icon: "💧", desc: "Hidratação" },
+                  { label: "Pedir Apoio", icon: "🫂", desc: "Conversar" },
+                  { label: "Ver Evolução", icon: "📈", desc: "Sua jornada" },
                 ].map((action, i) => (
-                  <button
+                  <motion.button
                     key={i}
-                    type="button"
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => onSendMessage(action.label)}
-                    className="flex flex-col items-center gap-2 p-4 bg-white border border-brand-tan/10 rounded-2xl hover:bg-brand-cream hover:border-brand-terracotta/30 transition-all group shadow-sm hover:shadow-md"
+                    className="flex flex-col items-center gap-2 p-5 bg-white border border-brand-tan/10 rounded-[2.5rem] hover:bg-brand-cream hover:border-brand-terracotta/30 transition-all group shadow-sm hover:shadow-xl text-center"
                   >
-                    <span className="text-xl group-hover:scale-110 transition-transform">{action.icon}</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-brand-brown-800/60 group-hover:text-brand-brown-800">
+                    <span className="text-2xl group-hover:scale-110 transition-transform mb-1">{action.icon}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-brand-brown-800">
                       {action.label}
                     </span>
-                  </button>
+                    <span className="text-[8px] opacity-40 font-bold uppercase tracking-tight">{action.desc}</span>
+                  </motion.button>
                 ))}
+              </div>
+
+              <div className="mt-12 p-4 bg-brand-terracotta/5 rounded-2xl border border-brand-terracotta/10 max-w-[280px]">
+                <p className="text-[10px] font-bold text-brand-terracotta uppercase tracking-widest mb-1">Dica de hoje</p>
+                <p className="text-[11px] text-brand-brown-800/70 italic font-medium">"Beber água ajuda a manter o sangue mais fluido, prevenindo crises."</p>
               </div>
             </div>
           )}
           
-          {messages.map((m) => (
+          {messages.map((m, i) => (
             <motion.div
               key={m.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, x: m.role === 'user' ? 20 : -20, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3) }}
               className={cn(
                 "flex items-start gap-4",
                 m.role === 'user' ? "flex-row-reverse" : "flex-row"

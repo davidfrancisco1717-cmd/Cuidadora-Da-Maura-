@@ -18,8 +18,11 @@
 }
 
 @layer base {
+  html, body, #root {
+    height: 100%;
+  }
   body {
-    @apply bg-brand-bg text-brand-brown-800 font-sans antialiased;
+    @apply bg-brand-bg text-brand-brown-800 font-sans antialiased overflow-hidden;
   }
 }
 

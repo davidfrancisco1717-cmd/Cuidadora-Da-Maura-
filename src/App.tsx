@@ -25,20 +25,32 @@ const INITIAL_PROFILE: MauraProfile = {
 };
 
 export default function App() {
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>(() => {
-    const saved = localStorage.getItem('maura_chat');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('maura_chat');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
   });
   
   const [logs, setLogs] = useState<HealthLog[]>(() => {
-    const saved = localStorage.getItem('maura_logs');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('maura_logs');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
   });
 
   const [profile, setProfile] = useState<MauraProfile>(() => {
-    const saved = localStorage.getItem('maura_profile');
-    return saved ? JSON.parse(saved) : INITIAL_PROFILE;
+    try {
+      const saved = localStorage.getItem('maura_profile');
+      return saved ? JSON.parse(saved) : INITIAL_PROFILE;
+    } catch { return INITIAL_PROFILE; }
   });
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsInitialLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
   const [isTyping, setIsTyping] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'history' | 'profile' | 'settings'>('chat');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -161,8 +173,31 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-brand-bg overflow-hidden justify-center">
-      <div className="flex w-full max-w-6xl h-full bg-brand-paper shadow-2xl relative overflow-hidden">
+    <div className="flex h-screen bg-brand-bg overflow-hidden justify-center items-stretch font-sans">
+      <AnimatePresence>
+        {isInitialLoading && (
+          <motion.div 
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-brand-bg flex flex-col items-center justify-center p-6 text-center"
+          >
+            <motion.div 
+              animate={{ 
+                scale: [1, 1.1, 1],
+                rotate: [0, 180, 360]
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="w-16 h-16 bg-brand-brown-800 rounded-2xl flex items-center justify-center shadow-2xl mb-6"
+            >
+              <Heart className="w-8 h-8 text-white fill-white" />
+            </motion.div>
+            <h1 className="text-2xl font-bold text-brand-brown-800 tracking-tighter">Maura</h1>
+            <p className="text-[10px] text-brand-terracotta font-bold uppercase tracking-[0.3em] mt-2">Cuidado Especializado</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex w-full max-w-7xl h-full bg-brand-paper shadow-2xl relative overflow-hidden md:m-4 md:rounded-[2.5rem] border border-brand-tan/10">
         <Sidebar 
           isOpen={isSidebarOpen} 
           onClose={() => setIsSidebarOpen(false)} 
@@ -171,33 +206,55 @@ export default function App() {
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col h-full overflow-hidden bg-brand-paper">
+        <main className="flex-1 flex flex-col h-full overflow-hidden bg-brand-paper relative">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-terracotta/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+          
           {/* Header */}
-          <header className="h-20 bg-brand-brown-900 px-6 md:px-8 flex items-center justify-between shrink-0 z-50 text-brand-cream">
-            <div className="flex items-center gap-4">
+          <header className="h-20 bg-brand-brown-800 px-6 md:px-10 flex items-center justify-between shrink-0 z-50 text-brand-cream relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-brown-900 to-brand-brown-800 opacity-50" />
+            
+            <div className="flex items-center gap-4 relative z-10">
               <button 
                 onClick={() => setIsSidebarOpen(true)}
-                className="md:hidden p-2 text-brand-cream/60 hover:bg-brand-brown-800 rounded-xl transition-colors"
+                className="md:hidden p-2 text-brand-cream/60 hover:bg-brand-brown-700 rounded-xl transition-colors"
               >
                 <Menu className="w-6 h-6" />
               </button>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-brand-tan rounded-full flex items-center justify-center shadow-lg">
-                   <div className="text-brand-brown-900"><Pill className="w-6 h-6" /></div>
-                </div>
+                <motion.div 
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  className="w-12 h-12 bg-brand-tan rounded-2xl flex items-center justify-center shadow-xl border-2 border-white/10"
+                >
+                  <div className="text-brand-brown-900"><Pill className="w-7 h-7" /></div>
+                </motion.div>
                 <div>
-                  <h1 className="text-lg md:text-xl font-bold tracking-tight">
+                  <h1 className="text-xl md:text-2xl font-bold tracking-tighter">
                     Maura
                   </h1>
-                  <p className="text-[10px] text-brand-tan font-bold uppercase tracking-widest">Especialista · Psicóloga · Amiga</p>
+                  <p className="text-[10px] text-brand-tan font-bold uppercase tracking-widest leading-none opacity-80">Companheira de Cuidado</p>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="hidden md:flex w-10 h-10 rounded-full bg-brand-tan/20 items-center justify-center border border-brand-tan/30">
-                <UserIcon className="w-5 h-5 text-brand-tan" />
+
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="hidden md:flex flex-col items-end mr-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest opacity-40 text-brand-tan">Paciente</p>
+                <p className="text-xs font-bold text-brand-cream">{profile.name}</p>
               </div>
-              <button className="px-4 py-2 bg-brand-terracotta text-white rounded-full text-[10px] font-bold shadow-lg shadow-brand-terracotta/20 active:scale-95 transition-all">SOS</button>
+              <div className="hidden md:flex w-12 h-12 rounded-2xl bg-brand-tan/10 items-center justify-center border border-brand-tan/20 shadow-inner group cursor-pointer hover:bg-brand-tan/20 transition-all">
+                <UserIcon className="w-6 h-6 text-brand-tan group-hover:scale-110 transition-transform" />
+              </div>
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                animate={{ 
+                  boxShadow: ["0 0 0 0 rgba(201, 126, 74, 0)", "0 0 0 10px rgba(201, 126, 74, 0.1)", "0 0 0 20px rgba(201, 126, 74, 0)"]
+                }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="px-6 py-2.5 bg-brand-terracotta text-white rounded-2xl text-[10px] font-bold shadow-lg shadow-brand-terracotta/40 hover:shadow-brand-terracotta/60 transition-all uppercase tracking-widest relative z-10"
+              >
+                SOS
+              </motion.button>
             </div>
           </header>
 
