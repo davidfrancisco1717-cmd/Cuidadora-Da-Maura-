@@ -33,7 +33,7 @@ export default function App() {
 
   const [profile] = useState<MauraProfile>(INITIAL_PROFILE);
   const [isTyping, setIsTyping] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chat' | 'history'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'history' | 'profile' | 'settings'>('chat');
 
   useEffect(() => {
     localStorage.setItem('maura_chat', JSON.stringify(messages));
@@ -79,109 +79,150 @@ export default function App() {
     };
     setLogs(prev => [...prev, newLog]);
     
-    // Auto-prompt AI if pain is high
     if (type === 'pain' && value >= 7) {
       handleSendMessage(`Maura relatou dor nível ${value}. Dê orientações urgentes.`);
     }
   };
 
   return (
-    <div className="min-h-screen bg-warm-bg pb-20 md:pb-0">
-      {/* Header */}
-      <header className="p-6 md:p-8 max-w-6xl mx-auto flex justify-between items-end">
-        <div>
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2 text-primary-warm mb-1"
-          >
-            <Heart className="w-5 h-5 fill-current" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Cuidado Diário</span>
-          </motion.div>
-          <h1 className="font-serif text-4xl md:text-5xl text-gray-900 leading-tight">
-            Olá, <span className="italic underline decoration-primary-soft/40">{profile.name}</span>
-          </h1>
-          <p className="text-gray-500 mt-2 text-sm max-w-md">
-            Sua companheira está aqui para te apoiar com a saúde e bem-estar hoje.
-          </p>
+    <div className="flex h-screen bg-brand-bg overflow-hidden">
+      {/* Sidebar Navigation - Desktop */}
+      <aside className="w-64 bg-white border-r border-brand-slate-200 hidden md:flex flex-col p-6 shrink-0">
+        <div className="flex items-center gap-3 mb-10">
+          <div className="w-10 h-10 bg-brand-teal-600 rounded-xl flex items-center justify-center">
+            <div className="w-5 h-5 border-2 border-white rounded-full"></div>
+          </div>
+          <span className="text-xl font-bold tracking-tight text-brand-teal-900">Maura.ai</span>
         </div>
         
-        <div className="hidden md:flex gap-4">
-           <button className="p-2 hover:bg-gray-100 rounded-full transition-colors"><Settings className="w-5 h-5 text-gray-400" /></button>
-           <div className="w-10 h-10 rounded-full bg-primary-soft/20 flex items-center justify-center border border-primary-soft/30">
-             <UserIcon className="w-5 h-5 text-primary-warm" />
-           </div>
+        <nav className="space-y-1">
+          <button onClick={() => setActiveTab('chat')} className={cn("w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm", activeTab === 'chat' ? "sidebar-item-active" : "sidebar-item-inactive")}>
+            <Heart className="w-4 h-4" />
+            <span>Principal</span>
+          </button>
+          <button onClick={() => setActiveTab('history')} className={cn("w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm", activeTab === 'history' ? "sidebar-item-active" : "sidebar-item-inactive")}>
+            <Calendar className="w-4 h-4" />
+            <span>Saúde e Protocolos</span>
+          </button>
+          <button onClick={() => setActiveTab('profile')} className={cn("w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm", activeTab === 'profile' ? "sidebar-item-active" : "sidebar-item-inactive")}>
+            <UserIcon className="w-4 h-4" />
+            <span>Meu Perfil</span>
+          </button>
+          <button onClick={() => setActiveTab('settings')} className={cn("w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm", activeTab === 'settings' ? "sidebar-item-active" : "sidebar-item-inactive")}>
+            <Settings className="w-4 h-4" />
+            <span>Configurações</span>
+          </button>
+        </nav>
+
+        <div className="mt-auto">
+          <div className="p-4 bg-brand-slate-100 rounded-xl">
+            <p className="text-[10px] font-bold text-brand-slate-500 uppercase tracking-widest mb-2">Segurança</p>
+            <p className="text-[10px] text-brand-slate-600 leading-relaxed">Seus dados de saúde estão criptografados e protegidos.</p>
+          </div>
         </div>
-      </header>
+      </aside>
 
-      <main className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Tracking & Status */}
-        <div className="lg:col-span-2 space-y-8">
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-serif text-xl font-medium">Situação Atual</h3>
-              <span className="text-[10px] text-gray-400 uppercase font-bold">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col h-full overflow-hidden">
+        {/* Header */}
+        <header className="h-20 bg-white border-b border-brand-slate-200 px-8 flex items-center justify-between shrink-0">
+          <div>
+            <h1 className="text-lg font-bold text-brand-slate-900 tracking-tight">Olá, {profile.name}</h1>
+            <p className="text-xs text-brand-slate-500 font-medium">Como está sua energia hoje?</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <button className="hidden sm:block px-4 py-2 border border-brand-teal-200 text-brand-teal-700 rounded-lg text-xs font-bold hover:bg-brand-teal-50 transition-colors">Emergência</button>
+            <div className="w-10 h-10 rounded-full bg-brand-slate-100 border border-brand-slate-200 flex items-center justify-center">
+              <UserIcon className="w-5 h-5 text-brand-slate-400" />
             </div>
-            <HealthTracker logs={logs} onAddLog={handleAddLog} />
-          </section>
+          </div>
+        </header>
 
-          <section className="hidden md:block">
-            <h3 className="font-serif text-xl font-medium mb-4">Lembretes & Conhecimento</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div className="glass-card p-5 border-l-4 border-l-primary-warm">
-                 <h4 className="font-bold text-sm text-gray-800 mb-1 flex items-center gap-2">
-                   <Info className="w-4 h-4 text-primary-warm" />
-                   Dica de Hidratação
-                 </h4>
-                 <p className="text-xs text-gray-600 italic">Beber água ajuda a manter o sangue mais fluido, prevenindo crises de dor.</p>
-               </div>
-               <div className="glass-card p-5 border-l-4 border-l-secondary-warm">
-                 <h4 className="font-bold text-sm text-gray-800 mb-1 flex items-center gap-2">
-                   <Calendar className="w-4 h-4 text-secondary-warm" />
-                   Gatilhos Ativos
-                 </h4>
-                 <p className="text-xs text-gray-600">Atenção ao <span className="font-medium text-gray-800">frio</span> hoje. Mantenha-se agasalhada.</p>
-               </div>
-            </div>
-          </section>
-          
-          <section className="bg-white rounded-3xl p-6 border border-gray-100 hidden md:block">
-            <h3 className="font-serif text-xl font-medium mb-4">Seu Plano de Cuidado</h3>
-            <div className="space-y-3">
-              {profile.medications.map((med, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center"><Pill className="w-4 h-4 text-gray-400" /></div>
-                    <span className="text-sm font-medium">{med}</span>
-                  </div>
-                  <span className="text-[10px] bg-green-50 text-green-600 px-2 py-1 rounded-full font-bold uppercase">Em dia</span>
+        {/* Dashboard Grid */}
+        <section className="flex-1 p-6 md:p-8 flex flex-col lg:flex-row gap-8 overflow-hidden">
+          {/* Left Column: Tracking */}
+          <div className="flex-1 flex flex-col gap-8 overflow-y-auto pr-2 no-scrollbar">
+            <section>
+              <HealthTracker logs={logs} onAddLog={handleAddLog} />
+            </section>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="glass-card p-6 border-l-4 border-l-brand-teal-600">
+                <div className="flex items-center gap-2 text-brand-teal-700 mb-2">
+                  <Info className="w-4 h-4" />
+                  <h4 className="text-xs font-bold uppercase tracking-widest">Dica de Hidratação</h4>
                 </div>
-              ))}
+                <p className="text-sm text-brand-slate-600 leading-relaxed italic">Beber água ajuda a manter o sangue mais fluido, prevenindo crises de dor.</p>
+              </div>
+              <div className="glass-card p-6 border-l-4 border-l-brand-teal-900">
+                <div className="flex items-center gap-2 text-brand-teal-900 mb-2">
+                  <Calendar className="w-4 h-4" />
+                  <h4 className="text-xs font-bold uppercase tracking-widest">Gatilhos Ativos</h4>
+                </div>
+                <p className="text-sm text-brand-slate-600 leading-relaxed">Atenção ao <span className="font-bold text-brand-slate-800 underline decoration-brand-teal-200">frio</span> hoje. Mantenha-se agasalhada.</p>
+              </div>
             </div>
-          </section>
-        </div>
 
-        {/* Right Column: Chat */}
-        <div className="lg:col-span-1 h-[600px]">
-          <Chat 
-            messages={messages} 
-            onSendMessage={handleSendMessage}
-            isTyping={isTyping}
-          />
-        </div>
+            <section className="glass-card p-6">
+              <h3 className="text-sm font-bold text-brand-slate-400 uppercase tracking-widest mb-4">Seu Plano de Cuidado</h3>
+              <div className="space-y-3">
+                {profile.medications.map((med, i) => (
+                  <div key={i} className="flex items-center justify-between py-3 border-b border-brand-slate-50 last:border-0">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-brand-slate-50 flex items-center justify-center text-brand-slate-400">
+                         <Pill className="w-4 h-4" />
+                      </div>
+                      <span className="text-sm font-semibold text-brand-slate-700">{med}</span>
+                    </div>
+                    <span className="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded font-bold uppercase">Tomado</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          {/* Right Column: AI Chat */}
+          <div className="w-full lg:w-[400px] h-[500px] lg:h-full shrink-0">
+            <Chat 
+              messages={messages} 
+              onSendMessage={handleSendMessage}
+              isTyping={isTyping}
+            />
+          </div>
+        </section>
       </main>
 
-      {/* Mobile Footer Nav */}
-      <div className="fixed bottom-0 left-0 right-0 md:hidden bg-white border-t border-gray-100 flex justify-around p-4 z-50">
-        <button onClick={() => setActiveTab('chat')} className={cn("flex flex-col items-center gap-1", activeTab === 'chat' ? "text-primary-warm font-bold" : "text-gray-400")}>
-          <Heart className="w-6 h-6" />
-          <span className="text-[10px] uppercase">Apoio</span>
+      {/* Mobile Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-brand-slate-200 md:hidden flex items-center justify-around z-50">
+        <button 
+          onClick={() => setActiveTab('chat')} 
+          className={cn("flex flex-col items-center gap-1", activeTab === 'chat' ? "text-brand-teal-600" : "text-brand-slate-400")}
+        >
+          <Heart className="w-5 h-5" />
+          <span className="text-[9px] font-bold uppercase tracking-tighter">Apoio</span>
         </button>
-        <button onClick={() => setActiveTab('history')} className={cn("flex flex-col items-center gap-1", activeTab === 'history' ? "text-primary-warm font-bold" : "text-gray-400")}>
-          <Calendar className="w-6 h-6" />
-          <span className="text-[10px] uppercase">Histórico</span>
+        <button 
+          onClick={() => setActiveTab('history')} 
+          className={cn("flex flex-col items-center gap-1", activeTab === 'history' ? "text-brand-teal-600" : "text-brand-slate-400")}
+        >
+          <Calendar className="w-5 h-5" />
+          <span className="text-[9px] font-bold uppercase tracking-tighter">Histórico</span>
         </button>
-      </div>
+        <button 
+          onClick={() => setActiveTab('profile')} 
+          className={cn("flex flex-col items-center gap-1", activeTab === 'profile' ? "text-brand-teal-600" : "text-brand-slate-400")}
+        >
+          <UserIcon className="w-5 h-5" />
+          <span className="text-[9px] font-bold uppercase tracking-tighter">Perfil</span>
+        </button>
+        <button 
+          onClick={() => setActiveTab('settings')} 
+          className={cn("flex flex-col items-center gap-1", activeTab === 'settings' ? "text-brand-teal-600" : "text-brand-slate-400")}
+        >
+          <Settings className="w-5 h-5" />
+          <span className="text-[9px] font-bold uppercase tracking-tighter">Ajustes</span>
+        </button>
+      </nav>
     </div>
   );
 }

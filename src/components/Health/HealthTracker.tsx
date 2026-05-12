@@ -18,77 +18,89 @@ export const HealthTracker: React.FC<TrackerProps> = ({ logs, onAddLog }) => {
   const currentEnergy = todaysLogs.filter(l => l.type === 'energy').sort((a,b) => b.timestamp - a.timestamp)[0]?.value || 5;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {/* Hydration */}
-      <motion.div 
-        whileHover={{ y: -2 }}
-        onClick={() => onAddLog('hydration', 1)}
-        className="glass-card p-4 cursor-pointer flex flex-col items-center justify-center text-center group transition-all hover:bg-white"
-      >
-        <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-          <Droplets className="w-6 h-6" />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Energy Card (Featured) */}
+      <div className="glass-card p-6 flex flex-col justify-between">
+        <h3 className="text-[10px] font-bold text-brand-slate-400 uppercase tracking-widest mb-4">Energia Diária</h3>
+        <div className="flex items-end gap-2">
+          <span className="text-5xl font-light text-brand-teal-600">{currentEnergy}</span>
+          <span className="text-lg text-brand-slate-400 pb-1">/ 10</span>
         </div>
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-tighter">Hidratação</span>
-        <div className="text-xl font-serif font-bold text-blue-600">{hydrationCount} copos</div>
-        <p className="text-[10px] text-gray-400 mt-1">Clique para somar</p>
-      </motion.div>
+        <div className="mt-4 flex gap-1">
+          {[2, 4, 6, 8, 10].map(v => (
+            <button 
+              key={v}
+              onClick={() => onAddLog('energy', v)} 
+              className={cn(
+                "flex-1 h-1.5 rounded-full transition-all",
+                currentEnergy >= v ? "bg-brand-teal-500" : "bg-brand-slate-100 hover:bg-brand-teal-200"
+              )}
+            />
+          ))}
+        </div>
+      </div>
 
-      {/* Pain */}
-      <div className="glass-card p-4 flex flex-col items-center justify-center text-center">
-        <div className="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-2">
-          <Thermometer className="w-6 h-6" />
+      {/* Hydration Card */}
+      <div className="glass-card p-6 flex flex-col justify-between">
+        <h3 className="text-[10px] font-bold text-brand-slate-400 uppercase tracking-widest mb-4">Acompanhamento</h3>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-brand-slate-600">Hidratação</span>
+            <span className="font-semibold">{hydrationCount * 0.25}L / 2.5L</span>
+          </div>
+          <div className="w-full bg-brand-slate-100 h-2 rounded-full overflow-hidden">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min((hydrationCount * 0.25 / 2.5) * 100, 100)}%` }}
+              className="bg-brand-teal-500 h-full rounded-full" 
+            />
+          </div>
+          <button 
+            onClick={() => onAddLog('hydration', 1)}
+            className="w-full py-2 bg-brand-teal-50 text-brand-teal-700 text-xs font-bold rounded-lg border border-brand-teal-100 hover:bg-brand-teal-100 transition-colors"
+          >
+            ADICIONAR COPO (250ML)
+          </button>
         </div>
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-tighter">Nível de Dor</span>
-        <div className="flex gap-1 mt-1">
+      </div>
+
+      {/* Pain Level Card */}
+      <div className="glass-card p-6 flex flex-col justify-between">
+        <h3 className="text-[10px] font-bold text-brand-slate-400 uppercase tracking-widest mb-4">Nível de Dor</h3>
+        <div className="flex flex-wrap gap-2 mb-4">
           {[1,2,3,4,5,6,7,8,9,10].map(v => (
             <button
               key={v}
               onClick={() => onAddLog('pain', v)}
               className={cn(
-                "w-3 h-3 rounded-full transition-all",
-                currentPain >= v ? "bg-red-500 scale-110" : "bg-gray-200 hover:bg-red-200"
+                "w-7 h-7 rounded-lg text-[10px] font-bold transition-all border",
+                currentPain === v 
+                  ? "bg-brand-slate-800 text-white border-brand-slate-800" 
+                  : "bg-white text-brand-slate-400 border-brand-slate-200 hover:border-brand-teal-500"
               )}
-            />
+            >
+              {v}
+            </button>
           ))}
         </div>
-        <div className="text-xl font-serif font-bold text-red-600 mt-2">{currentPain}/10</div>
+        <p className="text-xs text-brand-slate-500 italic">
+          {currentPain >= 7 ? "Crise detectada. Considere emergência." : "Continue registrando sua percepção."}
+        </p>
       </div>
 
-      {/* Energy */}
-      <div className="glass-card p-4 flex flex-col items-center justify-center text-center">
-        <div className="w-10 h-10 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center mb-2">
-          <Zap className="w-6 h-6" />
-        </div>
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-tighter">Energia</span>
-        <div className="w-full bg-gray-100 h-2 rounded-full mt-2 overflow-hidden">
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: `${currentEnergy * 10}%` }}
-            className="h-full bg-yellow-400"
-          />
-        </div>
-        <div className="flex justify-between w-full mt-1">
-           {[2, 4, 6, 8, 10].map(v => (
-             <button 
-              key={v}
-              onClick={() => onAddLog('energy', v)} 
-              className="text-[8px] hover:text-yellow-600 font-bold"
-             >
-               {v}
-             </button>
-           ))}
-        </div>
-      </div>
-
-      {/* SOS / Emergency */}
+      {/* Emergency Card (Special Highlight) */}
       <motion.div 
         whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="bg-red-600 p-4 rounded-3xl flex flex-col items-center justify-center text-center text-white shadow-lg shadow-red-200 cursor-pointer"
+        className="lg:col-span-3 bg-brand-slate-900 p-6 rounded-2xl shadow-lg text-white flex items-center justify-between"
       >
-        <AlertCircle className="w-8 h-8 mb-2" />
-        <span className="text-xs font-bold uppercase">Ajuda Urgente</span>
-        <p className="text-[10px] opacity-80">Crise Grave / Hospital</p>
+        <div>
+          <h3 className="text-[10px] font-bold opacity-70 uppercase tracking-widest mb-2">Canal de Emergência</h3>
+          <p className="text-xl font-medium">Precisa de ajuda agora?</p>
+          <p className="text-sm opacity-60">Acionamento de protocolo de crise e contatos.</p>
+        </div>
+        <button className="px-8 py-3 bg-white text-brand-slate-900 rounded-xl font-bold text-sm hover:bg-opacity-90 transition-all">
+          CONTATO URGENTE
+        </button>
       </motion.div>
     </div>
   );
