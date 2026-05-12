@@ -1,13 +1,260 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Maura</title>
+    <!-- Font Awesome CDN (funciona no Netlify) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: #fdf3ea; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: fixed; width: 100%; }
+        .app { display: flex; flex-direction: column; height: 100%; width: 100%; max-width: 600px; margin: 0 auto; background: #fffef7; }
+        .header { background: linear-gradient(135deg, #4e2c1c, #3e2417); padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .avatar { background: #e2b48c; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .avatar i { font-size: 24px; color: #4a2a1b; }
+        .header-text { flex: 1; }
+        .header-text h1 { font-size: 1.3rem; font-weight: 700; color: #fef0e0; }
+        .header-text p { font-size: 0.65rem; color: #ffdfc4; }
+        .btn-icon { background: rgba(255,255,255,0.2); border: none; width: 38px; height: 38px; border-radius: 50%; color: #ffdfc4; font-size: 1rem; cursor: pointer; }
+        .memory-panel { background: #fcf5ed; border-bottom: 1px solid #f0e0d2; padding: 10px 16px; flex-shrink: 0; cursor: pointer; }
+        .memory-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: #4e2c1c; font-size: 0.85rem; }
+        .memory-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .memory-content.open { max-height: 380px; margin-top: 10px; overflow-y: auto; }
+        .memory-chip { background: white; border-radius: 20px; padding: 8px 12px; margin-bottom: 6px; font-size: 0.75rem; display: flex; align-items: center; gap: 8px; border-left: 3px solid #c97e4a; }
+        .memory-chip i { width: 22px; color: #bd723e; }
+        .chat-area { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; background: #fefaf7; }
+        .message { display: flex; align-items: flex-start; gap: 8px; max-width: 92%; }
+        .user-message { align-self: flex-end; flex-direction: row-reverse; }
+        .bubble { background: #efe3d8; padding: 10px 14px; border-radius: 20px; font-size: 0.85rem; line-height: 1.45; word-break: break-word; }
+        .user-message .bubble { background: #c97e4a; color: white; }
+        .ia-message .bubble { background: white; border: 1px solid #f0dfcf; }
+        .msg-icon { width: 30px; height: 30px; background: #e6cfbb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+        .input-bar { background: white; border-top: 1px solid #f2e3d6; padding: 10px 12px; display: flex; gap: 10px; flex-shrink: 0; }
+        .input-bar input { flex: 1; padding: 12px 16px; border: 1px solid #f0dfcf; border-radius: 30px; font-size: 0.9rem; background: #fffdfb; outline: none; }
+        .input-bar button { background: #c97e4a; border: none; width: 46px; height: 46px; border-radius: 50%; color: white; font-size: 1.2rem; cursor: pointer; }
+        .footer { font-size: 0.6rem; padding: 6px 12px; background: #fff0e6; color: #ac5f31; text-align: center; flex-shrink: 0; }
+        .typing { opacity: 0.7; font-style: italic; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .message { animation: fadeIn 0.2s ease; }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="header">
+        <div class="avatar"><i class="fas fa-brain"></i></div>
+        <div class="header-text">
+            <h1>Maura</h1>
+            <p>Especialista · Psicóloga · Amiga</p>
+        </div>
+        <button class="btn-icon" id="styleBtn"><i class="fas fa-random"></i></button>
+        <button class="btn-icon" id="resetBtn"><i class="fas fa-trash-alt"></i></button>
+    </div>
 
+    <div class="memory-panel" id="memoryToggle">
+        <div class="memory-header">
+            <span><i class="fas fa-database"></i> Memória</span>
+            <i class="fas fa-chevron-down" id="memoryIcon"></i>
+        </div>
+        <div class="memory-content" id="memoryContent">
+            <div id="memoryList"></div>
+        </div>
+    </div>
+
+    <div class="chat-area" id="chatArea">
+        <div class="message ia-message">
+            <div class="msg-icon"><i class="fas fa-robot"></i></div>
+            <div class="bubble">Olá, sou a Maura. Qual é o seu nome?</div>
+        </div>
+    </div>
+
+    <div class="input-bar">
+        <input type="text" id="messageInput" placeholder="Digite aqui..." autocomplete="off">
+        <button id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+    </div>
+    <div class="footer">⚠️ Febre acima 38°C ou dor intensa: procure atendimento médico</div>
+</div>
+
+<script>
+(function() {
+    // Garantir que tudo roda depois que o DOM carregar
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', iniciar);
+    } else {
+        iniciar();
+    }
+
+    function iniciar() {
+        console.log("Maura iniciada no Netlify");
+        
+        let memoria = {
+            nome: null, idade: null, hobbies: [], profissao: null,
+            gatilhos: [], medicacoes: [], sonhos: [],
+            humor: null, estilo: "normal"
+        };
+        
+        const estilos = ["normal", "terapeuta", "amiga", "coach", "direta"];
+        
+        function salvar() {
+            try {
+                localStorage.setItem("maura_memoria", JSON.stringify(memoria));
+                console.log("Memória salva");
+            } catch(e) { console.log("Erro ao salvar:", e); }
+        }
+        
+        function carregar() {
+            try {
+                let s = localStorage.getItem("maura_memoria");
+                if (s) {
+                    let p = JSON.parse(s);
+                    for (let k in p) {
+                        if (p[k]) memoria[k] = p[k];
+                    }
+                }
+            } catch(e) { console.log("Erro ao carregar:", e); }
+            atualizarPainel();
+        }
+        
+        function atualizarPainel() {
+            let div = document.getElementById("memoryList");
+            if (!div) return;
+            div.innerHTML = "";
+            let itens = [];
+            if (memoria.nome) itens.push(`<i class="fas fa-user"></i> Nome: ${memoria.nome}`);
+            if (memoria.idade) itens.push(`<i class="fas fa-calendar"></i> Idade: ${memoria.idade}`);
+            if (memoria.hobbies.length) itens.push(`<i class="fas fa-heart"></i> Hobbies: ${memoria.hobbies.join(", ")}`);
+            if (memoria.profissao) itens.push(`<i class="fas fa-briefcase"></i> Profissão: ${memoria.profissao}`);
+            if (memoria.gatilhos.length) itens.push(`<i class="fas fa-temperature-low"></i> Gatilhos: ${memoria.gatilhos.join(", ")}`);
+            if (memoria.medicacoes.length) itens.push(`<i class="fas fa-capsules"></i> Medicações: ${memoria.medicacoes.join(", ")}`);
+            if (memoria.sonhos.length) itens.push(`<i class="fas fa-star"></i> Sonhos: ${memoria.sonhos[0]}`);
+            if (memoria.humor) itens.push(`<i class="fas fa-smile"></i> Humor: ${memoria.humor}`);
+            if (itens.length === 0) itens.push('<i class="fas fa-info-circle"></i> Converse comigo, vou te conhecer');
+            for (let i = 0; i < itens.length; i++) {
+                let c = document.createElement("div");
+                c.className = "memory-chip";
+                c.innerHTML = itens[i];
+                div.appendChild(c);
+            }
+        }
+        
+        function aprender(msg) {
+            let m = msg.toLowerCase();
+            let original = msg;
+            if (!memoria.nome && (m.includes("me chamo") || m.includes("meu nome é"))) {
+                let r = original.match(/me chamo ([A-Za-zÀ-ú]+)/i) || original.match(/meu nome é ([A-Za-zÀ-ú]+)/i);
+                if (r && r[1]) memoria.nome = r[1];
+                else if (msg.length < 30 && !m.includes(" ")) memoria.nome = msg;
+            }
+            let id = original.match(/(\d+)\s*anos/);
+            if (id && id[1]) memoria.idade = id[1];
+            if (m.includes("gosto de") || m.includes("adoro")) {
+                let h = original.match(/(gosto de|adoro) ([\w\s,]+)/i);
+                if (h && h[2]) { let novo = h[2].trim().substring(0,35); if (!memoria.hobbies.includes(novo)) memoria.hobbies.push(novo); }
+            }
+            if (m.includes("trabalho") || (m.includes("sou") && (m.includes("profissão") || m.includes("faço")))) {
+                let p = original.match(/(trabalho com|sou|faço) ([\w\s]+)/i);
+                if (p && p[2]) memoria.profissao = p[2].trim();
+            }
+            if (m.includes("crise") || m.includes("dor") || m.includes("falciforme")) {
+                if (m.includes("frio") && !memoria.gatilhos.includes("frio")) memoria.gatilhos.push("frio");
+                if (m.includes("estresse") && !memoria.gatilhos.includes("estresse")) memoria.gatilhos.push("estresse");
+                if (m.includes("hidroxiureia") && !memoria.medicacoes.includes("hidroxiureia")) memoria.medicacoes.push("hidroxiureia");
+            }
+            if (m.includes("sonho") || m.includes("quero ser")) {
+                let s = original.match(/(sonho|quero ser) ([\w\s]+)/i);
+                if (s && s[2]) { let ns = s[2].trim().substring(0,45); if (!memoria.sonhos.includes(ns)) memoria.sonhos.push(ns); }
+            }
+            if (m.includes("triste")) memoria.humor = "triste";
+            if (m.includes("feliz")) memoria.humor = "feliz";
+            salvar();
+            atualizarPainel();
+        }
+        
+        function responder(msg) {
+            let m = msg.toLowerCase();
+            let nome = memoria.nome || "você";
+            if (!memoria.nome) return "Prazer! Como você se chama?";
+            if (m.includes("febre") || (m.includes("dor") && (m.includes("muita") || m.includes("insuportável")))) {
+                return "⚠️ Febre ou dor intensa em falciforme é EMERGÊNCIA. Procure atendimento médico.";
+            }
+            if (m.includes("crise") || m.includes("dor na perna")) {
+                return "Crise vaso-oclusiva: hidratação, compressa morna, repouso. Como está a dor de 0 a 10?";
+            }
+            if (m.includes("triste") || m.includes("sozinha")) {
+                return `Sinto muito que esteja assim, ${nome}. Quer conversar? Estou aqui. 💛`;
+            }
+            switch(memoria.estilo) {
+                case "terapeuta": return "Como você se sente em relação a isso?";
+                case "amiga": return "Tô do seu lado. Pode falar o que quiser.";
+                case "coach": return "O que você pode fazer agora para melhorar um pouco?";
+                case "direta": return "Qual é o problema principal agora?";
+                default: return "Estou aqui. Pode falar o que precisar.";
+            }
+        }
+        
+        // Elementos
+        let chat = document.getElementById("chatArea");
+        let input = document.getElementById("messageInput");
+        let send = document.getElementById("sendBtn");
+        let reset = document.getElementById("resetBtn");
+        let style = document.getElementById("styleBtn");
+        
+        function escapeHtml(t) { if (!t) return ""; return t.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; return '&gt;'; }); }
+        
+        function addMsg(texto, usuario) {
+            let d = document.createElement("div");
+            d.className = `message ${usuario ? "user-message" : "ia-message"}`;
+            let icone = usuario ? "fa-user" : "fa-robot";
+            d.innerHTML = `<div class="msg-icon"><i class="fas ${icone}"></i></div><div class="bubble">${escapeHtml(texto)}</div>`;
+            chat.appendChild(d);
+            chat.scrollTop = chat.scrollHeight;
+        }
+        
+        function enviar() {
+            let texto = input.value.trim();
+            if (!texto) return;
+            addMsg(texto, true);
+            input.value = "";
+            let tmp = document.createElement("div");
+            tmp.className = "message ia-message";
+            tmp.innerHTML = `<div class="msg-icon"><i class="fas fa-robot"></i></div><div class="bubble typing">...</div>`;
+            chat.appendChild(tmp);
+            chat.scrollTop = chat.scrollHeight;
+            setTimeout(() => {
+                aprender(texto);
+                let resp = responder(texto);
+                chat.removeChild(tmp);
+                addMsg(resp, false);
+                salvar();
+            }, 400);
+        }
+        
+        function resetar() { if (confirm("Apagar memória?")) { localStorage.removeItem("maura_memoria"); location.reload(); } }
+        function mudarEstilo() { let idx = (estilos.indexOf(memoria.estilo) + 1) % estilos.length; memoria.estilo = estilos[idx]; salvar(); addMsg(`Estilo: "${memoria.estilo}"`, false); }
+        
+        send.addEventListener("click", enviar);
+        input.addEventListener("keypress", (e) => { if (e.key === "Enter") enviar(); });
+        reset.addEventListener("click", resetar);
+        style.addEventListener("click", mudarEstilo);
+        
+        let toggle = document.getElementById("memoryToggle");
+        let content = document.getElementById("memoryContent");
+        let icon = document.getElementById("memoryIcon");
+        let aberto = false;
+        if (toggle) {
+            toggle.addEventListener("click", () => {
+                aberto = !aberto;
+                if (aberto) { content.classList.add("open"); icon.style.transform = "rotate(180deg)"; }
+                else { content.classList.remove("open"); icon.style.transform = "rotate(0deg)"; }
+            });
+        }
+        
+        carregar();
+        console.log("Maura pronta!");
+    }
+})();
+</script>
+</body>
+</html>
