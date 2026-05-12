@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Message, MauraProfile } from '../../types';
-import { Send, User, Bot, Sparkles, Database, ChevronDown, Wand2, ShieldAlert } from 'lucide-react';
+import { Send, User, Bot, Sparkles, Database, ChevronDown, Wand2, ShieldAlert, Heart } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
