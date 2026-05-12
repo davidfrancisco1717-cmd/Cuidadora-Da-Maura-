@@ -14,11 +14,16 @@ interface ChatProps {
 export const Chat: React.FC<ChatProps> = ({ messages, onSendMessage, isTyping }) => {
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    bottomRef.current?.scrollIntoView({ behavior });
+  };
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    // Small timeout to ensure DOM update is complete
+    const timeoutId = setTimeout(() => scrollToBottom('smooth'), 100);
+    return () => clearTimeout(timeoutId);
   }, [messages, isTyping]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -30,101 +35,122 @@ export const Chat: React.FC<ChatProps> = ({ messages, onSendMessage, isTyping })
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-2xl shadow-sm border border-brand-slate-200 overflow-hidden">
-      <div className="p-4 border-b border-brand-slate-100 flex items-center justify-between bg-brand-slate-50">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-brand-teal-600" />
-          <span className="text-sm font-semibold text-brand-slate-600">Sua Companheira</span>
-        </div>
-        <div className="flex items-center gap-2 text-[10px] uppercase font-bold text-green-600">
-          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-          Online
-        </div>
-      </div>
-
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6">
-        {messages.length === 0 && (
-          <div className="text-center py-20 opacity-40 flex flex-col items-center gap-3">
-            <Bot className="w-12 h-12 text-brand-teal-600" />
-            <p className="text-sm font-medium">"Oi Maura, como está sua energia hoje?"</p>
-          </div>
-        )}
-        
-        {messages.map((m) => (
-          <motion.div
-            key={m.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={cn(
-              "flex items-start gap-3",
-              m.role === 'user' ? "flex-row-reverse" : "flex-row"
-            )}
-          >
-            <div className={cn(
-              "w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold",
-              m.role === 'user' ? "bg-brand-teal-900 text-white" : "bg-brand-teal-100 text-brand-teal-600"
-            )}>
-              {m.role === 'user' ? 'M' : 'AI'}
-            </div>
-            <div
-              className={cn(
-                "p-4 rounded-2xl text-sm max-w-[85%]",
-                m.role === 'user' 
-                  ? "bg-brand-teal-600 text-white rounded-tr-none shadow-sm" 
-                  : "bg-brand-slate-100 text-brand-slate-800 rounded-tl-none"
-              )}
-            >
-              <div className="markdown-body">
-                <ReactMarkdown>{m.text}</ReactMarkdown>
+    <div className="flex flex-col h-full overflow-hidden transition-all">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth">
+        <div className="max-w-4xl mx-auto w-full space-y-6 flex flex-col min-h-full">
+          {messages.length === 0 && (
+            <div className="flex flex-col items-center justify-center flex-1 max-w-sm mx-auto text-center animate-in fade-in zoom-in duration-700 py-10">
+              <div className="w-16 h-16 bg-brand-cream rounded-2xl flex items-center justify-center text-brand-terracotta mb-6 shadow-sm border border-brand-tan/10">
+                <Sparkles className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-bold text-brand-brown-800 tracking-tight mb-8">
+                Como posso te ajudar agora, <span className="italic">Maura</span>?
+              </h2>
+              
+              <div className="grid grid-cols-2 gap-3 w-full">
+                {[
+                  { label: "Relatar Dor", icon: "🩹" },
+                  { label: "Beber Água", icon: "💧" },
+                  { label: "Pedir Apoio", icon: "🫂" },
+                  { label: "Ver Evolução", icon: "📈" },
+                ].map((action, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => onSendMessage(action.label)}
+                    className="flex flex-col items-center gap-2 p-4 bg-brand-cream/30 border border-brand-tan/20 rounded-2xl hover:bg-brand-cream hover:border-brand-terracotta/30 transition-all group shadow-sm hover:shadow-md"
+                  >
+                    <span className="text-xl group-hover:scale-110 transition-transform">{action.icon}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-brand-brown-800/60 group-hover:text-brand-brown-800">
+                      {action.label}
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
-          </motion.div>
-        ))}
+          )}
+          
+          {messages.map((m) => (
+            <motion.div
+              key={m.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={cn(
+                "flex items-start gap-4",
+                m.role === 'user' ? "flex-row-reverse" : "flex-row"
+              )}
+            >
+              <div className={cn(
+                "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-xs font-bold shadow-sm transition-transform hover:scale-110",
+                m.role === 'user' ? "bg-brand-brown-800 text-brand-tan" : "bg-brand-tan text-brand-brown-800"
+              )}>
+                {m.role === 'user' ? 'M' : <Bot className="w-4 h-4" />}
+              </div>
+              <div
+                className={cn(
+                  "p-5 rounded-3xl text-[15px] max-w-[80%] leading-relaxed shadow-sm transition-all",
+                  m.role === 'user' 
+                    ? "bg-brand-brown-800 text-white rounded-tr-none shadow-brand-brown-800/20" 
+                    : "bg-white text-brand-brown-800 rounded-tl-none border border-brand-tan/10"
+                )}
+              >
+                <div className={cn(
+                  "prose prose-sm prose-p:leading-relaxed",
+                  m.role === 'user' ? "text-white prose-invert" : "markdown-body"
+                )}>
+                  <ReactMarkdown>{m.text}</ReactMarkdown>
+                </div>
+              </div>
+            </motion.div>
+          ))}
 
-        {isTyping && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center gap-2 text-brand-slate-400 text-[10px] uppercase font-bold px-11"
-          >
-            <span className="flex gap-1">
-              <span className="w-1 h-1 bg-brand-slate-400 rounded-full animate-bounce"></span>
-              <span className="w-1 h-1 bg-brand-slate-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-              <span className="w-1 h-1 bg-brand-slate-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-            </span>
-            Digitando
-          </motion.div>
-        )}
+          {isTyping && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center gap-3 text-brand-brown-800/40 text-[10px] uppercase font-bold px-14"
+            >
+              <div className="flex gap-1">
+                <div className="w-1.5 h-1.5 bg-brand-terracotta/40 rounded-full animate-bounce [animation-duration:1s]" />
+                <div className="w-1.5 h-1.5 bg-brand-terracotta/40 rounded-full animate-bounce [animation-duration:1s] [animation-delay:0.2s]" />
+                <div className="w-1.5 h-1.5 bg-brand-terracotta/40 rounded-full animate-bounce [animation-duration:1s] [animation-delay:0.4s]" />
+              </div>
+              Maura está digitando...
+            </motion.div>
+          )}
+          <div ref={bottomRef} className="h-2" />
+        </div>
       </div>
 
-      <div className="p-4 border-t border-brand-slate-100">
-        <form onSubmit={handleSubmit} className="relative">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Escreva como você está se sentindo..."
-            className="w-full pl-4 pr-12 py-3 bg-brand-slate-50 border border-brand-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-teal-500 transition-colors"
-          />
-          <button
-            type="submit"
-            disabled={!input.trim() || isTyping}
-            className="absolute right-2 top-2 w-8 h-8 bg-brand-teal-600 text-white rounded-lg flex items-center justify-center hover:bg-brand-teal-700 disabled:opacity-50 transition-all cursor-pointer"
+      <div className="p-6 bg-transparent">
+        <form onSubmit={handleSubmit} className="flex items-center gap-3 max-w-3xl mx-auto w-full group">
+          <button 
+            type="button" 
+            className="w-12 h-12 rounded-2xl flex items-center justify-center text-brand-brown-800/50 hover:bg-white hover:text-brand-terracotta transition-all border border-brand-tan/20 bg-brand-cream/30 shadow-none hover:shadow-md active:scale-95 group/plus shrink-0"
+            title="Adicionar anexo ou contexto"
           >
-            <Send className="w-4 h-4" />
+            <div className="w-4 h-4 relative">
+              <div className="absolute inset-0 m-auto w-4 h-0.5 bg-current rounded-full transition-transform group-hover/plus:rotate-90" />
+              <div className="absolute inset-0 m-auto w-0.5 h-4 bg-current rounded-full transition-transform group-hover/plus:rotate-90" />
+            </div>
           </button>
-        </form>
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-          {['Dor moderada', 'Preciso de apoio', 'Protocolo de crise'].map(hint => (
+          
+          <div className="relative flex-1">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Como posso te cuidar hoje?..."
+              className="w-full pl-6 pr-14 py-4 bg-white border border-brand-tan/10 rounded-2xl text-sm focus:outline-none focus:border-brand-terracotta/30 focus:ring-4 focus:ring-brand-terracotta/5 transition-all placeholder:text-brand-brown-800/30 font-medium shadow-sm hover:shadow-md"
+            />
             <button
-              key={hint}
-              type="button"
-              onClick={() => setInput(hint)}
-              className="whitespace-nowrap px-3 py-1 bg-brand-slate-100 text-brand-slate-600 text-[10px] font-medium rounded-full border border-brand-slate-200 hover:bg-brand-slate-200 transition-colors"
+              type="submit"
+              disabled={!input.trim() || isTyping}
+              className="absolute right-2 top-2 bottom-2 w-10 bg-brand-brown-800 text-brand-tan rounded-xl flex items-center justify-center hover:bg-brand-brown-900 disabled:opacity-10 transition-all cursor-pointer shadow-lg shadow-brand-brown-800/10 active:scale-90"
             >
-              {hint}
+              <Send className="w-4 h-4 scale-x-[-1] -rotate-12 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </button>
-          ))}
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   );

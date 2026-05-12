@@ -63,3 +63,22 @@ export async function getChatResponse(
 
   return response.text || "Desculpe, tive um problema ao processar sua mensagem.";
 }
+
+export async function generateHealthSummary(logs: HealthLog[], profile: MauraProfile) {
+  const logSummary = logs.map(l => `- ${new Date(l.timestamp).toLocaleDateString()}: ${l.type} = ${l.value}`).join('\n');
+  
+  const prompt = `Com base nos seguintes logs de saúde da Maura, gere um resumo semanal empático e útil. 
+  Destaque padrões de dor, hidratação e energia. Dê dicas baseadas nos sonhos e hobbies dela (${profile.hobbies.join(', ')}).
+  
+  Logs:
+  ${logSummary}
+  
+  Responda em formato Markdown, com tom acolhedor.`;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.0-flash",
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+  });
+
+  return response.text || "Não foi possível gerar o resumo no momento.";
+}

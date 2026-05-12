@@ -5,31 +5,47 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   
-  --color-brand-bg: #F4F7F6;
-  --color-brand-teal-50: #f0fdfa;
-  --color-brand-teal-100: #ccfbf1;
-  --color-brand-teal-200: #99f6e4;
-  --color-brand-teal-600: #0d9488;
-  --color-brand-teal-700: #0f766e;
-  --color-brand-teal-900: #134e4a;
+  --color-brand-bg: #fdf3ea;
+  --color-brand-paper: #fffef7;
+  --color-brand-brown-900: #3e2417;
+  --color-brand-brown-800: #4e2c1c;
+  --color-brand-terracotta: #c97e4a;
+  --color-brand-tan: #e2b48c;
+  --color-brand-cream: #fcf5ed;
   
-  --color-brand-slate-50: #f8fafc;
-  --color-brand-slate-100: #f1f5f9;
-  --color-brand-slate-200: #e2e8f0;
-  --color-brand-slate-500: #64748b;
-  --color-brand-slate-600: #475569;
-  --color-brand-slate-800: #1e293b;
-  --color-brand-slate-900: #0f172a;
+  --color-reading-bg: #ffffff;
+  --color-reading-text: #000000;
 }
 
 @layer base {
   body {
-    @apply bg-brand-bg text-brand-slate-800 font-sans antialiased;
+    @apply bg-brand-bg text-brand-brown-800 font-sans antialiased;
   }
 }
 
+.reading-mode {
+  @apply bg-white text-black;
+}
+
+.reading-mode .glass-card,
+.reading-mode .chat-container {
+  @apply bg-white border-2 border-black shadow-none rounded-none outline-none;
+}
+
+.reading-mode .chat-header {
+  @apply hidden;
+}
+
+.reading-mode body {
+  @apply bg-white;
+}
+
 .markdown-body {
-  @apply text-sm leading-relaxed text-brand-slate-600;
+  @apply text-sm leading-relaxed text-brand-brown-800;
+}
+
+.reading-mode .markdown-body {
+  @apply text-lg leading-loose text-black font-medium;
 }
 
 .markdown-body p {
@@ -41,22 +57,22 @@
 }
 
 .markdown-body strong {
-  @apply font-semibold text-brand-slate-900;
+  @apply font-bold text-brand-brown-900;
 }
 
-.markdown-body em {
-  @apply italic;
+.reading-mode .markdown-body strong {
+  @apply text-black underline;
 }
 
 .glass-card {
-  @apply bg-white border border-brand-slate-200 shadow-sm rounded-2xl;
+  @apply bg-white border border-brand-tan/30 shadow-sm rounded-2xl;
 }
 
 .sidebar-item-active {
-  @apply bg-brand-teal-50 text-brand-teal-700 font-medium;
+  @apply bg-brand-terracotta text-white font-medium;
 }
 
 .sidebar-item-inactive {
-  @apply text-brand-slate-500 hover:bg-brand-slate-50 transition-colors;
+  @apply text-brand-brown-800/60 hover:bg-brand-cream transition-colors;
 }
 
