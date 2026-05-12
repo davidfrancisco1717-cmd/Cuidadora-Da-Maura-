@@ -5,11 +5,12 @@
 
 import { useState, useEffect } from 'react';
 import { Message, HealthLog, MauraProfile, AppState } from './types';
-import { getChatResponse } from './services/geminiService';
+import { getChatResponse } from './services/clientAiService';
 import { Chat } from './components/Chat/Chat';
 import { HealthTracker } from './components/Health/HealthTracker';
 import { HealthSummary } from './components/Health/HealthSummary';
 import { HealthCharts } from './components/Health/HealthCharts';
+import { HealthCalendar } from './components/Health/HealthCalendar';
 import { Sidebar } from './components/Navigation/Sidebar';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, User as UserIcon, Settings, Calendar, Menu } from 'lucide-react';
@@ -23,6 +24,13 @@ const INITIAL_PROFILE: MauraProfile = {
   medications: ["Hidroxiureia", "Ácido Fólico"],
   responseStyle: 'normal',
 };
+
+const Pill = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" />
+    <path d="m8.5 8.5 7 7" />
+  </svg>
+);
 
 export default function App() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -292,7 +300,10 @@ export default function App() {
                         
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                           <HealthTracker logs={logs} onAddLog={handleAddLog} />
-                          <HealthCharts logs={logs} />
+                          <HealthCalendar logs={logs} />
+                          <div className="lg:col-span-2">
+                             <HealthCharts logs={logs} />
+                          </div>
                         </div>
                         
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -417,10 +428,3 @@ export default function App() {
     </div>
   );
 }
-
-const Pill = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" />
-    <path d="m8.5 8.5 7 7" />
-  </svg>
-);
