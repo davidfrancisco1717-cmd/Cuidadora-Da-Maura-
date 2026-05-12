@@ -12,8 +12,9 @@ import { HealthSummary } from './components/Health/HealthSummary';
 import { HealthCharts } from './components/Health/HealthCharts';
 import { HealthCalendar } from './components/Health/HealthCalendar';
 import { Sidebar } from './components/Navigation/Sidebar';
+import { EmergencyModal } from './components/Emergency/EmergencyModal';
 import { motion, AnimatePresence } from 'motion/react';
-import { Heart, User as UserIcon, Settings, Calendar, Menu } from 'lucide-react';
+import { Heart, User as UserIcon, Settings, Calendar, Menu, Plus, X } from 'lucide-react';
 import { cn } from './lib/utils';
 
 const INITIAL_PROFILE: MauraProfile = {
@@ -54,6 +55,8 @@ export default function App() {
       return saved ? JSON.parse(saved) : INITIAL_PROFILE;
     } catch { return INITIAL_PROFILE; }
   });
+
+  const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsInitialLoading(false), 800);
@@ -180,6 +183,17 @@ export default function App() {
     }
   };
 
+  const updateProfileList = (key: 'hobbies' | 'dreams' | 'triggers' | 'medications', value: string, action: 'add' | 'remove') => {
+    const current = profile[key];
+    if (action === 'add') {
+      if (value && !current.includes(value)) {
+        setProfile({ ...profile, [key]: [...current, value] });
+      }
+    } else {
+      setProfile({ ...profile, [key]: current.filter(item => item !== value) });
+    }
+  };
+
   return (
     <div className="flex h-screen bg-brand-bg overflow-hidden justify-center items-stretch font-sans">
       <AnimatePresence>
@@ -253,6 +267,7 @@ export default function App() {
                 <UserIcon className="w-6 h-6 text-brand-tan group-hover:scale-110 transition-transform" />
               </div>
               <motion.button 
+                onClick={() => setIsEmergencyOpen(true)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 animate={{ 
@@ -299,7 +314,7 @@ export default function App() {
                         </header>
                         
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                          <HealthTracker logs={logs} onAddLog={handleAddLog} />
+                          <HealthTracker logs={logs} onAddLog={handleAddLog} onSos={() => setIsEmergencyOpen(true)} />
                           <HealthCalendar logs={logs} />
                           <div className="lg:col-span-2">
                              <HealthCharts logs={logs} />
@@ -315,18 +330,42 @@ export default function App() {
                               <h3 className="text-[10px] font-bold text-brand-brown-800 uppercase tracking-widest mb-4 opacity-60">Fatos sobre {profile.name}</h3>
                               <div className="flex flex-wrap gap-2">
                                 {profile.hobbies.map((h, i) => (
-                                  <span key={i} className="px-3 py-1 bg-white border border-brand-tan/20 rounded-full text-[10px] font-bold text-brand-brown-800/70">
-                                    <Heart className="w-3 h-3 inline mr-1 fill-brand-terracotta/20" /> {h}
+                                  <span key={i} className="px-3 py-1 bg-white border border-brand-tan/20 rounded-full text-[10px] font-bold text-brand-brown-800/70 flex items-center gap-1 group">
+                                    <Heart className="w-3 h-3 inline fill-brand-terracotta/20" /> {h}
+                                    <button 
+                                     onClick={() => updateProfileList('hobbies', h, 'remove')}
+                                     className="opacity-0 group-hover:opacity-100 ml-1 hover:text-red-500 transition-all cursor-pointer"
+                                    >
+                                      <X className="w-2 h-2" />
+                                    </button>
                                   </span>
                                 ))}
+                                <Plus 
+                                  className="w-4 h-4 text-brand-terracotta cursor-pointer hover:scale-110 ml-2" 
+                                  onClick={() => { const v = prompt('Novo hobby:'); if(v) updateProfileList('hobbies', v, 'add'); }}
+                                />
                               </div>
                             </section>
                             <div className="glass-card p-6 border-l-4 border-l-brand-terracotta bg-white">
-                              <h4 className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-2 text-brand-brown-800">Cuidado Diário</h4>
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest opacity-60 text-brand-brown-800">Cuidado Diário</h4>
+                                <Plus 
+                                  className="w-3 h-3 text-brand-terracotta cursor-pointer hover:scale-110" 
+                                  onClick={() => { const v = prompt('Nova medicação:'); if(v) updateProfileList('medications', v, 'add'); }}
+                                />
+                              </div>
                               <div className="space-y-3">
                                 {profile.medications.map((m, i) => (
-                                   <div key={i} className="text-xs font-bold text-brand-brown-800 flex items-center gap-2">
-                                     <div className="w-2 h-2 rounded-full bg-brand-terracotta shadow-sm shadow-brand-terracotta/40" /> {m}
+                                   <div key={i} className="text-xs font-bold text-brand-brown-800 flex items-center justify-between group">
+                                     <div className="flex items-center gap-2">
+                                       <div className="w-2 h-2 rounded-full bg-brand-terracotta shadow-sm shadow-brand-terracotta/40" /> {m}
+                                     </div>
+                                     <button 
+                                      onClick={() => updateProfileList('medications', m, 'remove')}
+                                      className="opacity-0 group-hover:opacity-100 text-brand-brown-800/20 hover:text-red-500"
+                                     >
+                                       <X className="w-3 h-3" />
+                                     </button>
                                    </div>
                                 ))}
                               </div>
@@ -359,21 +398,49 @@ export default function App() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                            <div className="glass-card p-8 bg-brand-cream/30">
-                             <h3 className="text-[10px] font-bold uppercase tracking-widest text-brand-brown-800 opacity-40 mb-4">Gatilhos Conhecidos</h3>
+                             <div className="flex items-center justify-between mb-4">
+                               <h3 className="text-[10px] font-bold uppercase tracking-widest text-brand-brown-800 opacity-40">Gatilhos Conhecidos</h3>
+                               <Plus 
+                                 className="w-4 h-4 text-brand-terracotta cursor-pointer hover:scale-110 transition-transform" 
+                                 onClick={() => { const v = prompt('Novo gatilho:'); if(v) updateProfileList('triggers', v, 'add'); }}
+                               />
+                             </div>
                              <div className="space-y-2">
                                {profile.triggers.map((t, i) => (
-                                 <div key={i} className="flex items-center gap-3 text-xs font-bold text-brand-brown-800/80 p-2 bg-white rounded-lg border border-brand-tan/10">
-                                   <span className="text-brand-terracotta">⚠</span> {t}
+                                 <div key={i} className="flex items-center justify-between p-2 bg-white rounded-lg border border-brand-tan/10 group">
+                                   <div className="flex items-center gap-3 text-xs font-bold text-brand-brown-800/80">
+                                      <span className="text-brand-terracotta">⚠</span> {t}
+                                   </div>
+                                   <button 
+                                    onClick={() => updateProfileList('triggers', t, 'remove')}
+                                    className="opacity-0 group-hover:opacity-100 p-1 text-brand-brown-800/20 hover:text-red-500 transition-all"
+                                   >
+                                     <X className="w-3 h-3" />
+                                   </button>
                                  </div>
                                ))}
                              </div>
                            </div>
                            <div className="glass-card p-8 bg-brand-cream/30">
-                             <h3 className="text-[10px] font-bold uppercase tracking-widest text-brand-brown-800 opacity-40 mb-4">Sonhos & Metas</h3>
+                             <div className="flex items-center justify-between mb-4">
+                               <h3 className="text-[10px] font-bold uppercase tracking-widest text-brand-brown-800 opacity-40">Sonhos & Metas</h3>
+                               <Plus 
+                                 className="w-4 h-4 text-brand-terracotta cursor-pointer hover:scale-110 transition-transform" 
+                                 onClick={() => { const v = prompt('Novo sonho:'); if(v) updateProfileList('dreams', v, 'add'); }}
+                               />
+                             </div>
                              <div className="space-y-2">
                                {profile.dreams.map((d, i) => (
-                                 <div key={i} className="flex items-center gap-3 text-xs font-bold text-brand-brown-800/80 p-2 bg-white rounded-lg border border-brand-tan/10">
-                                   <span className="text-brand-terracotta">✨</span> {d}
+                                 <div key={i} className="flex items-center justify-between p-2 bg-white rounded-lg border border-brand-tan/10 group">
+                                   <div className="flex items-center gap-3 text-xs font-bold text-brand-brown-800/80">
+                                      <span className="text-brand-terracotta">✨</span> {d}
+                                   </div>
+                                   <button 
+                                    onClick={() => updateProfileList('dreams', d, 'remove')}
+                                    className="opacity-0 group-hover:opacity-100 p-1 text-brand-brown-800/20 hover:text-red-500 transition-all"
+                                   >
+                                     <X className="w-3 h-3" />
+                                   </button>
                                  </div>
                                ))}
                              </div>
@@ -425,6 +492,11 @@ export default function App() {
           </footer>
         </main>
       </div>
+      <EmergencyModal 
+        isOpen={isEmergencyOpen} 
+        onClose={() => setIsEmergencyOpen(false)} 
+        profile={profile} 
+      />
     </div>
   );
 }

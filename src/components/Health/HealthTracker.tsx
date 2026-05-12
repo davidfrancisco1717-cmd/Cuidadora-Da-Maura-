@@ -7,9 +7,10 @@ import { cn } from '../../lib/utils';
 interface TrackerProps {
   logs: HealthLog[];
   onAddLog: (type: HealthLog['type'], value: any) => void;
+  onSos: () => void;
 }
 
-export const HealthTracker: React.FC<TrackerProps> = ({ logs, onAddLog }) => {
+export const HealthTracker: React.FC<TrackerProps> = ({ logs, onAddLog, onSos }) => {
   const todayRaw = new Date().setHours(0, 0, 0, 0);
   const todaysLogs = logs.filter(l => new Date(l.timestamp).setHours(0, 0, 0, 0) === todayRaw);
 
@@ -99,7 +100,10 @@ export const HealthTracker: React.FC<TrackerProps> = ({ logs, onAddLog }) => {
           <p className="text-xl font-bold tracking-tight">Precisa de apoio imediato?</p>
           <p className="text-xs opacity-50 font-medium">Acione o plano de crise e seus contatos de confiança.</p>
         </div>
-        <button className="w-full sm:w-auto px-8 py-4 bg-brand-terracotta text-white rounded-2xl font-bold text-sm hover:bg-brand-terracotta/90 transition-all shadow-lg shadow-brand-terracotta/20 active:scale-95 flex items-center justify-center gap-2">
+        <button 
+          onClick={onSos}
+          className="w-full sm:w-auto px-8 py-4 bg-brand-terracotta text-white rounded-2xl font-bold text-sm hover:bg-brand-terracotta/90 transition-all shadow-lg shadow-brand-terracotta/20 active:scale-95 flex items-center justify-center gap-2"
+        >
           <AlertCircle className="w-4 h-4" />
           CANAL DE EMERGÊNCIA
         </button>
